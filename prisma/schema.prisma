@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id          Int      @id @default(autoincrement())
+  firstName   String
+  lastName    String
+  username    String   @unique
+  email       String   @unique
+  password    String
+  isAdmin     Boolean  @default(false)
+  createdDate DateTime @default(now()) @db.Timestamp(0)
+  updatedDate DateTime @updatedAt @db.Timestamp(0)
+
+  Cart  Cart[]
+  Order Order[]
+}
+
+model Product {
+  id            Int     @id @default(autoincrement())
+  productImage  String
+  productType   String
+  productName   String
+  productDetail String
+  price         Decimal @default(0.00) @db.Decimal(10, 2)
+
+  OrderItem OrderItem[]
+  Cart      Cart[]
+}
+
+model Cart {
+  id        Int @id
+  userId    Int
+  productId Int
+  amount    Int
+
+  users    User    @relation(fields: [userId], references: [id])
+  products Product @relation(fields: [productId], references: [id])
+}
+
+model OrderItem {
+  id         Int     @id @default(autoincrement())
+  orderId    Int
+  productId  Int
+  itemAmount Int
+  totalPrice Decimal @default(0.00) @db.Decimal(10, 2)
+
+  orders   Order   @relation(fields: [orderId], references: [id])
+  products Product @relation(fields: [productId], references: [id])
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVE
+  DECLINE
+}
+
+model Order {
+  id      Int         @id @default(autoincrement())
+  orderId Int         @unique
+  userId  Int
+  status  OrderStatus @default(PENDING)
+
+  users User @relation(fields: [userId], references: [id])
+
+  OrderItem OrderItem[]
+  Payment   Payment?
+}
+
+enum PaymentStatus {
+  PENDIND
+  SUCCESS
+  DECLINE
+}
+
+model Payment {
+  id          Int      @id @default(autoincrement())
+  orderId     Int      @unique
+  amountTotal Int
+  priceTotal  Decimal  @default(0.00) @db.Decimal(10, 2)
+  paymentDate DateTime @default(now()) @db.Timestamp(0)
+  slipImage   String
+
+  orders Order @relation(fields: [orderId], references: [id])
+}
