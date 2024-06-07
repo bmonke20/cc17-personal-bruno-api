@@ -50,7 +50,7 @@ userController.register = async (req, res, next) => {
         createError({
           message: "user already exist",
           field: "username or email",
-          statusCOde: 400,
+          statusCode: 400,
         })
       );
     }
@@ -80,6 +80,35 @@ userController.register = async (req, res, next) => {
 
 userController.login = async (req, res, next) => {
   try {
+    const { email, username, password } = req.body;
+
+    if ((!email && !username) || !password) {
+      throw createError({
+        message: "insert email or username",
+        statusCode: 400,
+      });
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        OR: [{ email: email }, { username: username }],
+      },
+    });
+
+    if (!user) {
+      throw createError({ message: "Invalid credentials", statusCode: 401 });
+    }
+
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (!passwordMatch) {
+      throw createError({
+        message: "Invalid credentials",
+        statusCode: 401,
+      });
+    }
+
+    res.status(201).json({ message: "Login success", user });
   } catch (err) {
     next(err);
   }

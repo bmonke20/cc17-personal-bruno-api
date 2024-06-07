@@ -12,4 +12,10 @@ const registerSchema = Joi.object({
   isAdmin: Joi.boolean().optional(),
 });
 
-module.exports = { registerSchema };
+const loginSchema = Joi.object({
+  email: Joi.string().optional(),
+  username: Joi.string().optional(),
+  password: Joi.string().required(),
+});
+
+module.exports = { registerSchema, loginSchema };
