@@ -1,25 +1,27 @@
+const { PrismaClient } = require("@prisma/client");
+const jwtService = require("../services/jwtService");
 const createError = require("../utils/createError");
+
+const prisma = new PrismaClient();
 
 const authenticate = async (req, res, next) => {
   try {
-    const authorization = req.header.authorization;
-    if (!authorization || authorization.startWidth(`Bearer `)) {
-      createError({
+    const authorization = req.headers.authorization;
+    if (!authorization || !authorization.startsWith(`Bearer `)) {
+      return createError({
         message: "unauthen",
         statusCode: 401,
       });
     }
 
-    if (!user) {
-      createError({
-        message: "user not found",
-        statusCode: 400,
-      });
-    }
+    const accessToken = authorization.split(" ")[1];
+    const payload = jwtService.verify(accessToken);
 
-    delete user.password;
+    const user = await prisma.user.findFirst({
+      where: { id: payload.userId },
+    });
 
-    req.user.password;
+    req.user = user;
     next();
   } catch (err) {
     next(err);

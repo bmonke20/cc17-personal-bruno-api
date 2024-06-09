@@ -1,0 +1,13 @@
+-- Register
+POST '/user/login'
+BODY
+  firstName
+  lastName
+  usernaem
+  email
+  password
+  confirmPassword
+RESPONSE
+  200 message
+  400 message
+  500 message

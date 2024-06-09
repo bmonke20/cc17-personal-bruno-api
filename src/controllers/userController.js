@@ -1,6 +1,7 @@
 const createError = require("../utils/createError");
 const { PrismaClient } = require("@prisma/client");
 const bcrypt = require("bcryptjs");
+const jwtService = require("../services/jwtService");
 
 const prisma = new PrismaClient();
 
@@ -18,30 +19,7 @@ userController.register = async (req, res, next) => {
       isAdmin,
     } = req.body;
 
-    // if (
-    //   !firstName ||
-    //   !lastName ||
-    //   !username ||
-    //   !email ||
-    //   !password ||
-    //   !confirmPassword
-    // ) {
-    //   createError({
-    //     message: "Fill all input",
-    //     field: "user",
-    //     statuscode: 400,
-    //   });
-    // }
-
-    // if (password !== confirmPassword) {
-    //   createError({
-    //     message: "password do not match",
-    //     field: "confirmPassword",
-    //     statusCode: 400,
-    //   });
-    // }
-
-    const userExist = await prisma.user.findFirst({
+    const userExist = await prisma.user.findUnique({
       where: { OR: [{ username: username }, { email: email }] },
     });
 
@@ -108,10 +86,26 @@ userController.login = async (req, res, next) => {
       });
     }
 
-    res.status(201).json({ message: "Login success", user });
+    const accessToken = jwtService.sign({ id: user.id });
+
+    res.status(201).json({ message: "Login success", accessToken });
   } catch (err) {
     next(err);
   }
+};
+
+userController.me = async (req, res, next) => {
+  try {
+    const user = prisma.user.findUnique({ where: { id: req.user.id } });
+
+    if (!user) {
+      throw createError({ message: "user not found", statusCode: 404 });
+    }
+  } catch (err) {
+    next(err);
+  }
+
+  res.status(200).json({ user: req.user });
 };
 
 module.exports = userController;

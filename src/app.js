@@ -13,7 +13,7 @@ app.use(cors());
 app.use(morgan("dev"));
 app.use(express.json());
 
-app.use("/user", userRouter);
+app.use("/auth", userRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);
