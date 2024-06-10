@@ -19,7 +19,7 @@ userController.register = async (req, res, next) => {
       isAdmin,
     } = req.body;
 
-    const userExist = await prisma.user.findUnique({
+    const userExist = await prisma.user.findFirst({
       where: { OR: [{ username: username }, { email: email }] },
     });
 
@@ -58,9 +58,10 @@ userController.register = async (req, res, next) => {
 
 userController.login = async (req, res, next) => {
   try {
-    const { email, username, password } = req.body;
-
-    if ((!email && !username) || !password) {
+    console.log("here");
+    const { identify, password } = req.body;
+    console.log(req.body, "body___________");
+    if (!identify || !password) {
       throw createError({
         message: "insert email or username",
         statusCode: 400,
@@ -69,10 +70,10 @@ userController.login = async (req, res, next) => {
 
     const user = await prisma.user.findFirst({
       where: {
-        OR: [{ email: email }, { username: username }],
+        OR: [{ email: identify }, { username: identify }],
       },
     });
-
+    console.log(user, "_____________user");
     if (!user) {
       throw createError({ message: "Invalid credentials", statusCode: 401 });
     }
@@ -90,6 +91,7 @@ userController.login = async (req, res, next) => {
 
     res.status(201).json({ message: "Login success", accessToken });
   } catch (err) {
+    console.log(err);
     next(err);
   }
 };

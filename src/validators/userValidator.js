@@ -13,9 +13,27 @@ const registerSchema = Joi.object({
 });
 
 const loginSchema = Joi.object({
-  email: Joi.string().optional(),
-  username: Joi.string().optional(),
+  identify: Joi.string()
+    .required()
+    .custom((value, helpers) => {
+      // Regular expression for validating email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      // Regular expression for validating username (alphanumeric and at least 3 characters)
+      const usernameRegex = /^[a-zA-Z0-9]{3,}$/;
+
+      if (emailRegex.test(value) || usernameRegex.test(value)) {
+        return value; // Valid identify
+      } else {
+        return helpers.message(
+          "Identify must be a valid email or username (at least 3 alphanumeric characters)"
+        );
+      }
+    })
+    .messages({
+      "string.empty": "Email or username is required",
+      "any.required": "Email or username is required",
+    }),
   password: Joi.string().required(),
-}).xor("email", "username");
+});
 
 module.exports = { registerSchema, loginSchema };

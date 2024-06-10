@@ -7,8 +7,9 @@ const prisma = new PrismaClient();
 const authenticate = async (req, res, next) => {
   try {
     const authorization = req.headers.authorization;
+    console.log(authorization, "token__________");
     if (!authorization || !authorization.startsWith(`Bearer `)) {
-      return createError({
+      createError({
         message: "unauthen",
         statusCode: 401,
       });
@@ -17,10 +18,15 @@ const authenticate = async (req, res, next) => {
     const accessToken = authorization.split(" ")[1];
     const payload = jwtService.verify(accessToken);
 
-    const user = await prisma.user.findFirst({
-      where: { id: payload.userId },
+    console.log(payload, "________payload");
+
+    const user = await prisma.user.findUnique({
+      where: {
+        id: payload.id,
+      },
     });
 
+    console.log(user, "________user");
     req.user = user;
     next();
   } catch (err) {
