@@ -1,4 +1,5 @@
 const { PrismaClient } = require("@prisma/client");
+const uploadService = require("../services/uploadService");
 
 const prisma = new PrismaClient();
 const productController = {};
@@ -7,15 +8,19 @@ productController.createProduct = async (req, res, next) => {
   try {
     const { productImage, productType, productName, productDetail, price } =
       req.body;
+
+    const result = await uploadService.uploadProduct(req.file.path);
+
     const newProduct = await prisma.product.create({
       data: {
-        productImage,
-        productType,
-        productName,
-        productDetail,
-        price,
+        productImage: result,
+        productType: req.body.productType,
+        productName: req.body.productName,
+        productDetail: req.body.productDetail,
+        price: +req.body.price,
       },
     });
+
     res.status(200).json(newProduct);
   } catch (err) {
     console.log(err.message);
@@ -69,6 +74,7 @@ productController.updateProduct = async (req, res, next) => {
         productType: productType[productType.toUppercase()],
       },
     });
+    res.status(200).json(product);
   } catch (err) {
     console.log(err);
   }

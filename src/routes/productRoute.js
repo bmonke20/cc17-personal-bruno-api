@@ -12,14 +12,10 @@ productRouter.post(
 
 productRouter.get("/", productController.getAllProduct);
 
-productRouter.get("/:id", productController.getProductById);
+productRouter.get("/:productId", productController.getProductById);
 
-productRouter.put(
-  "/:id",
-  upload.single("productImage"),
-  productController.updateProduct
-);
+productRouter.put("/:productType", productController.updateProduct);
 
-productRouter.delete("/:id", productController.deleteProduct);
+productRouter.delete("/:productId", productController.deleteProduct);
 
 module.exports = productRouter;

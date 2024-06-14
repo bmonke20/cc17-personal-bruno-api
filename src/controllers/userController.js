@@ -48,8 +48,6 @@ userController.register = async (req, res, next) => {
       data: data,
     });
 
-    console.log(result);
-
     res.status(201).json({ messgae: "Register success", user: result });
   } catch (err) {
     next(err);
@@ -58,9 +56,7 @@ userController.register = async (req, res, next) => {
 
 userController.login = async (req, res, next) => {
   try {
-    console.log("here");
     const { identify, password } = req.body;
-    console.log(req.body, "body___________");
     if (!identify || !password) {
       throw createError({
         message: "insert email or username",
@@ -73,7 +69,6 @@ userController.login = async (req, res, next) => {
         OR: [{ email: identify }, { username: identify }],
       },
     });
-    console.log(user, "_____________user");
     if (!user) {
       throw createError({ message: "Invalid credentials", statusCode: 401 });
     }
