@@ -41,7 +41,7 @@ model Product {
 }
 
 model Cart {
-  id        Int @id
+  id        Int @id @default(autoincrement())
   userId    Int
   productId Int
   amount    Int
@@ -80,7 +80,7 @@ model Order {
 }
 
 enum PaymentStatus {
-  PENDIND
+  PENDING
   SUCCESS
   DECLINE
 }

@@ -105,4 +105,43 @@ userController.me = async (req, res, next) => {
   res.status(200).json({ user: req.user });
 };
 
+userController.getProfile = async (req, res, next) => {
+  const { id } = req.params;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
+      return createError({ message: "user not found", statusCode: 404 });
+    }
+    res.status(200).json({ user });
+  } catch (err) {
+    next(err);
+  }
+};
+
+userController.updateProfile = async (req, res, next) => {
+  const { firstName, lastName, username, email, password } = req.vody;
+
+  try {
+    const data = {};
+
+    if (firstName) data.firstName = firstName;
+    if (lastName) data.lastName = lastName;
+    if (username) data.username = username;
+    if (email) data.email = email;
+    if (password) data.password = await bcrypt.hash(password);
+
+    const user = await prisma.user.update({
+      where: { id: req.user.id },
+      data,
+    });
+
+    res.status(200).json({ message: "Profile update", user });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = userController;

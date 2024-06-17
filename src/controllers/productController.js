@@ -5,18 +5,17 @@ const prisma = new PrismaClient();
 const productController = {};
 
 productController.createProduct = async (req, res, next) => {
+  const { productImage, productType, productName, productDetail, price } =
+    req.body;
   try {
-    const { productImage, productType, productName, productDetail, price } =
-      req.body;
-
     const result = await uploadService.uploadProduct(req.file.path);
 
     const newProduct = await prisma.product.create({
       data: {
         productImage: result,
-        productType: req.body.productType,
-        productName: req.body.productName,
-        productDetail: req.body.productDetail,
+        productType: productType,
+        productName: productName,
+        productDetail: productDetail,
         price: +req.body.price,
       },
     });
@@ -44,7 +43,7 @@ productController.getProductById = async (req, res, next) => {
   try {
     const product = await prisma.product.findUnique({
       where: {
-        id: parseInt(id),
+        id,
       },
     });
     if (!product) {
@@ -64,14 +63,13 @@ productController.updateProduct = async (req, res, next) => {
 
   try {
     const product = await prisma.product.update({
-      where: { id: parseInt(id) },
+      where: { id },
       data: {
         productImage,
         productType,
         productName,
         productDetail,
         price,
-        productType: productType[productType.toUppercase()],
       },
     });
     res.status(200).json(product);
@@ -86,7 +84,7 @@ productController.deleteProduct = async (req, res, next) => {
 
   try {
     await prisma.product.delete({
-      where: { id: parseInt(id) },
+      where: { id },
     });
 
     res.status(200).json({ message: "delete product" });

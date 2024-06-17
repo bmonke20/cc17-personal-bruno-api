@@ -24,9 +24,9 @@ cartController.addCart = async (req, res, next) => {
 
     const newItem = await prisma.cart.create({
       data: {
-        productId: +req.body,
-        amount,
-        userId,
+        productId: +req.body.productId,
+        amount: +req.body.amount,
+        userId: +req.body.userId,
       },
     });
     res.status(201).json(newItem);
