@@ -9,18 +9,16 @@ const userController = {};
 
 userController.register = async (req, res, next) => {
   try {
-    const {
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-      confirmPassword,
-      isAdmin,
-    } = req.body;
+    const { firstName, lastName, username, email, password, isAdmin } =
+      req.body;
 
     const userExist = await prisma.user.findFirst({
-      where: { OR: [{ username: username }, { email: email }] },
+      where: {
+        OR: [
+          { username: username, NOT: { username: { contains: "admin" } } },
+          { email: email, NOT: { email: { contains: "admin" } } },
+        ],
+      },
     });
 
     if (userExist) {
@@ -83,8 +81,11 @@ userController.login = async (req, res, next) => {
     }
 
     const accessToken = jwtService.sign({ id: user.id });
+    const redirectUrl = "/";
 
-    res.status(201).json({ message: "Login success", accessToken });
+    res
+      .status(201)
+      .json({ message: "Login success", accessToken, redirectUrl });
   } catch (err) {
     console.log(err);
     next(err);
@@ -122,7 +123,7 @@ userController.getProfile = async (req, res, next) => {
 };
 
 userController.updateProfile = async (req, res, next) => {
-  const { firstName, lastName, username, email, password } = req.vody;
+  const { firstName, lastName, username, email, password } = req.body;
 
   try {
     const data = {};
@@ -131,7 +132,7 @@ userController.updateProfile = async (req, res, next) => {
     if (lastName) data.lastName = lastName;
     if (username) data.username = username;
     if (email) data.email = email;
-    if (password) data.password = await bcrypt.hash(password);
+    if (password) data.password = await bcrypt.hash(password, 10); // hash password ก่อนบันทึกลงฐานข้อมูล
 
     const user = await prisma.user.update({
       where: { id: req.user.id },

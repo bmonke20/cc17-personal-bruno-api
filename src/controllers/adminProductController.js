@@ -2,9 +2,9 @@ const { PrismaClient } = require("@prisma/client");
 const uploadService = require("../services/uploadService");
 
 const prisma = new PrismaClient();
-const productController = {};
+const adminProductController = {};
 
-productController.createProduct = async (req, res, next) => {
+adminProductController.createProduct = async (req, res, next) => {
   const { productImage, productType, productName, productDetail, price } =
     req.body;
 
@@ -25,7 +25,7 @@ productController.createProduct = async (req, res, next) => {
   }
 };
 
-productController.getAllProduct = async (req, res, next) => {
+adminProductController.getAllProduct = async (req, res, next) => {
   try {
     const products = await prisma.product.findMany();
     res.json(products);
@@ -35,7 +35,7 @@ productController.getAllProduct = async (req, res, next) => {
   }
 };
 
-productController.getProductById = async (req, res, next) => {
+adminProductController.getProductById = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -54,7 +54,7 @@ productController.getProductById = async (req, res, next) => {
   }
 };
 
-productController.updateProduct = async (req, res, next) => {
+adminProductController.updateProduct = async (req, res, next) => {
   const { id } = req.params;
   const { productImage, productType, productName, productDetail, price } =
     req.body;
@@ -77,7 +77,7 @@ productController.updateProduct = async (req, res, next) => {
   }
 };
 
-productController.deleteProduct = async (req, res, next) => {
+adminProductController.deleteProduct = async (req, res, next) => {
   const { id } = req.params;
 
   try {
@@ -91,4 +91,4 @@ productController.deleteProduct = async (req, res, next) => {
   }
 };
 
-module.exports = productController;
+module.exports = adminProductController;

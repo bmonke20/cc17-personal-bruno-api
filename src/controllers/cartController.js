@@ -6,8 +6,13 @@ const prisma = new PrismaClient();
 const cartController = {};
 
 cartController.getCart = async (req, res, next) => {
+  const { userId } = req.params;
+
   try {
-    const cart = await prisma.cart.findMany();
+    const cart = await prisma.cart.findMany({
+      where: { userId: parseInt(userId) },
+      include: { products: true },
+    });
     res.status(200).json(cart);
   } catch (err) {
     next(err);
@@ -19,14 +24,14 @@ cartController.addCart = async (req, res, next) => {
 
   try {
     if (!productId || !amount || !userId) {
-      createError({ message: "require" });
+      createError(400, "productId, amount, and userId are required");
     }
 
     const newItem = await prisma.cart.create({
       data: {
-        productId: +req.body.productId,
-        amount: +req.body.amount,
-        userId: +req.body.userId,
+        productId: +productId,
+        amount: +amount,
+        userId: +userId,
       },
     });
     res.status(201).json(newItem);
@@ -36,21 +41,17 @@ cartController.addCart = async (req, res, next) => {
 };
 
 cartController.updateCart = async (req, res, next) => {
-  const { id } = req.params;
+  const { cartId } = req.params;
   const { amount } = req.body;
 
   try {
     const updateItem = await prisma.cart.update({
-      where: {
-        id,
-      },
-      data: {
-        amount,
-      },
+      where: { id: +cartId },
+      data: { amount: +amount },
     });
 
     if (!updateItem) {
-      createError(404, `Item ${id} not found`);
+      createError(404, `Item ${cartId} not found`);
     }
 
     res.status(200).json(updateItem);
@@ -60,15 +61,54 @@ cartController.updateCart = async (req, res, next) => {
 };
 
 cartController.deleteCart = async (req, res, next) => {
-  const { id } = req.params;
+  const { cartId } = req.params;
 
   try {
     const deleteItem = await prisma.cart.delete({
-      where: { id },
+      where: { id: +cartId },
     });
 
     if (!deleteItem) {
-      createError(404, `Item ${id} not delete`);
+      createError(404, `Item ${cartId} not found`);
+    }
+
+    res.status(200).json(deleteItem);
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Controller สำหรับ admin
+cartController.updateCartByAdmin = async (req, res, next) => {
+  const { cartId } = req.params;
+  const { amount } = req.body;
+
+  try {
+    const updateItem = await prisma.cart.update({
+      where: { id: +cartId },
+      data: { amount: +amount },
+    });
+
+    if (!updateItem) {
+      createError(404, `Item ${cartId} not found`);
+    }
+
+    res.status(200).json(updateItem);
+  } catch (err) {
+    next(err);
+  }
+};
+
+cartController.deleteCartByAdmin = async (req, res, next) => {
+  const { cartId } = req.params;
+
+  try {
+    const deleteItem = await prisma.cart.delete({
+      where: { id: +cartId },
+    });
+
+    if (!deleteItem) {
+      createError(404, `Item ${cartId} not found`);
     }
 
     res.status(200).json(deleteItem);

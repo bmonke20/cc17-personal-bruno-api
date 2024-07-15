@@ -4,36 +4,86 @@ const prisma = new PrismaClient();
 
 const paymentController = {};
 
-paymentController.getPayment = async (req, res, next) => {
+paymentController.getAllPayment = async (req, res, next) => {
   try {
-    const payment = await prisma.payment.findMany();
-    res.status(200).json(payment);
-  } catch (err) {
-    next(er);
+    const payments = await prisma.payment.findMany();
+    res.json(payments);
+  } catch (error) {
+    res.status(500).json({ error: "Could not retrieve payments" });
   }
 };
+
 paymentController.createPayment = async (req, res, next) => {
   const { orderId, amountTotal, priceTotal, paymentDate, slipImage } = req.body;
 
   try {
     const newPayment = await prisma.payment.create({
       data: {
-        orderId: orderId,
-        amountTotal: +req.body,
-        priceTotal: priceTotal,
-        paymentDate: paymentDate,
-        slipImage: slipImage,
+        orderId,
+        amountTotal,
+        priceTotal,
+        paymentDate,
+        slipImage,
       },
     });
 
-    const cartItem = req.body.cartItem;
-    for (const item of cartItem) {
-      await prisma.cart.delete({
-        where: { id: item.id },
-      });
+    res.json(newPayment);
+  } catch (err) {
+    next(err);
+    res.status(500).json({ error: "Could not create payment" });
+  }
+};
+
+paymentController.getPaymentById = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const payment = await prisma.payment.findUnique({
+      where: { id: parseInt(id) },
+      include: { orders: true },
+    });
+
+    if (!payment) {
+      return res.status(404).json({ error: "Payment not found" });
     }
 
-    res.status(200).json(newPayment);
+    res.json(payment);
+  } catch (err) {
+    res.status(500).json({ error: "Could not retrieve payment" });
+    next(err);
+  }
+};
+
+paymentController.updatePayment = async (req, res, next) => {
+  const { id } = req.params;
+  const { amountTotal, priceTotal, paymentDate, slipImage } = req.body;
+
+  try {
+    const updatedPayment = await prisma.payment.update({
+      where: { id: parseInt(id) },
+      data: {
+        amountTotal,
+        priceTotal,
+        paymentDate,
+        slipImage,
+      },
+    });
+
+    res.json(updatedPayment);
+  } catch (err) {
+    next(err);
+  }
+};
+
+paymentController.deletePayment = async (req, res, next) => {
+  const { id } = req.params;
+
+  try {
+    const deletedPayment = await prisma.payment.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.json(deletedPayment);
   } catch (err) {
     next(err);
   }

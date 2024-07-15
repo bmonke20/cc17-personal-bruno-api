@@ -14,30 +14,26 @@ orderController.getAllOrder = async (req, res, next) => {
 };
 
 orderController.createOrder = async (req, res, next) => {
-  const { userId, item, totalAmount, totalPrice } = req.body;
+  const { userId, status, orderItems } = req.body;
 
   try {
     const newOrder = await prisma.order.create({
       data: {
         userId,
-        totalAmount,
-        totalPrice,
+        status,
+        orderItems: {
+          createMany: {
+            data: orderItems,
+          },
+        },
       },
+      include: { orderItems: true, Payment: true },
     });
 
-    for (const item of item) {
-      await prisma.orderItem.create({
-        data: {
-          orderId: newOrder.id,
-          productId: item.productId,
-          quantity: item.quantity,
-        },
-      });
-    }
-
-    res.status(200).json(newOrder);
+    res.json(newOrder);
   } catch (err) {
     next(err);
+    res.status(500).json({ error: "Could not create order" });
   }
 };
 
@@ -61,32 +57,34 @@ orderController.getOrderById = async (req, res, next) => {
 };
 
 orderController.updateOrder = async (req, res, next) => {
-  const { orderId } = req.params;
+  const { id } = req.params;
   const { status } = req.body;
 
   try {
-    const updateOrder = await prisma.order.update({
-      where: { id: orderId },
+    const updatedOrder = await prisma.order.update({
+      where: { id: parseInt(id) },
       data: { status },
     });
 
-    res.status(200).json(updateOrder);
+    res.json(updatedOrder);
   } catch (err) {
     next(err);
+    res.status(500).json({ error: "Could not update order status" });
   }
 };
 
 orderController.deleteOrder = async (req, res, next) => {
-  const { orderId } = req.params;
+  const { id } = req.params;
 
   try {
-    await prisma.order.delete({
-      where: { id: orderId },
+    const deletedOrder = await prisma.order.delete({
+      where: { id: parseInt(id) },
     });
 
-    res.status(200).json({ message: "Delete order" });
+    res.json(deletedOrder);
   } catch (err) {
     next(err);
+    res.status(500).json({ error: "Could not delete order" });
   }
 };
 
