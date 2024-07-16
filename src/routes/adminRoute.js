@@ -4,6 +4,7 @@ const adminOrderController = require("../controllers/adminOrderController");
 const adminPaymentController = require("../controllers/adminPaymentController");
 const cartController = require("../controllers/cartController");
 const adminProductController = require("../controllers/adminProductController");
+const { loginValidate } = require("../middlewares/validate");
 
 const adminRouter = express.Router();
 
@@ -14,6 +15,8 @@ const isAdmin = (req, res, next) => {
     res.status(403).json({ message: "Unauthorized access" });
   }
 };
+
+adminRouter.post("/login", loginValidate, adminController.login);
 
 // Routes for product management
 adminRouter.get("/product", isAdmin, adminProductController.getAllProduct);

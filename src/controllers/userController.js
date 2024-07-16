@@ -55,6 +55,9 @@ userController.register = async (req, res, next) => {
 userController.login = async (req, res, next) => {
   try {
     const { identify, password } = req.body;
+
+    console.log("----", identify);
+
     if (!identify || !password) {
       throw createError({
         message: "insert email or username",
@@ -67,15 +70,21 @@ userController.login = async (req, res, next) => {
         OR: [{ email: identify }, { username: identify }],
       },
     });
+
+    console.log("+++", user);
+
     if (!user) {
-      throw createError({ message: "Invalid credentials", statusCode: 401 });
+      throw createError({
+        message: "Invalid credentials 1",
+        statusCode: 401,
+      });
     }
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (!passwordMatch) {
       throw createError({
-        message: "Invalid credentials",
+        message: "Invalid credentials 2",
         statusCode: 401,
       });
     }

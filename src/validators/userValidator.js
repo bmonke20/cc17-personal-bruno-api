@@ -19,7 +19,7 @@ const loginSchema = Joi.object({
       // Regular expression for validating email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       // Regular expression for validating username (alphanumeric and at least 3 characters)
-      const usernameRegex = /^[a-zA-Z0-9]{3,}$/;
+      const usernameRegex = /^[a-zA-Z0-9]/;
 
       if (emailRegex.test(value) || usernameRegex.test(value)) {
         return value; // Valid identify

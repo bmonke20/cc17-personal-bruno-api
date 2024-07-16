@@ -36,12 +36,12 @@ productController.getAllProduct = async (req, res, next) => {
 };
 
 productController.getProductById = async (req, res, next) => {
-  const { id } = req.params;
+  const { productId } = req.params;
 
   try {
     const product = await prisma.product.findUnique({
       where: {
-        id,
+        id: parseInt(productId),
       },
     });
     if (!product) {
