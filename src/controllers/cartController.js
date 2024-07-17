@@ -22,6 +22,7 @@ cartController.getCart = async (req, res, next) => {
 cartController.addCart = async (req, res, next) => {
   const { productId, amount, userId } = req.body;
 
+  console.log("req.body", req.body);
   try {
     if (!productId || !amount || !userId) {
       createError(400, "productId, amount, and userId are required");
