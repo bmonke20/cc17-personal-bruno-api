@@ -10,6 +10,6 @@ userRouter.post("/login", loginValidate, userController.login);
 userRouter.get("/me", authenticate, userController.me);
 
 userRouter.get("/:id", authenticate, userController.getProfile);
-userRouter.put("/update", authenticate, userController.updateProfile);
+userRouter.patch("/update", authenticate, userController.updateProfile);
 
 module.exports = userRouter;

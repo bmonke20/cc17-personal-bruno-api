@@ -10,7 +10,7 @@ const productRouter = require("./routes/productRoute");
 const cartRouter = require("./routes/cartRoute");
 const paymentRouter = require("./routes/paymentRoute");
 const orderRouter = require("./routes/orderRoute");
-const adminRouter = require("./routes/adminRoute");
+const orderItemRouter = require("./routes/orderItemRoute");
 
 const app = express();
 
@@ -19,11 +19,11 @@ app.use(morgan("dev"));
 app.use(express.json());
 
 app.use("/auth", userRouter);
-app.use("/admin", adminRouter);
 app.use("/product", productRouter);
 app.use("/cart", cartRouter);
 app.use("/payment", paymentRouter);
 app.use("/order", orderRouter);
+app.use("/orderItem", orderItemRouter);
 
 app.use(notFoundMiddleware);
 app.use(errorMiddleware);

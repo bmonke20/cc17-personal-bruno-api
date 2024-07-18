@@ -153,22 +153,23 @@ productController.getProductById = async (req, res, next) => {
 
 productController.updateProduct = async (req, res, next) => {
   const { productId } = req.params;
-  const { productName, productType, productDetail, productPrice } = req.body;
+  // const { productName, productType, productDetail, productPrice } = req.body;
+  req.body.price = +req.body.productPrice;
+  delete req.body.productPrice;
+
+  console.log("req body00000000000", req.body);
 
   console.log(req.file);
-  const result = await uploadService.uploadProduct(req.file.path);
+
+  if (req.file) {
+    const result = await uploadService.uploadProduct(req.file.path);
+    req.body.productImage = result;
+  }
 
   try {
     const product = await prisma.product.update({
       where: { id: +productId },
-      data: {
-        productImage: result,
-        productType,
-        productName,
-        productDetail,
-        price: +productPrice,
-        productType: productType,
-      },
+      data: req.body,
     });
     res.status(200).json(product);
   } catch (err) {
@@ -178,8 +179,6 @@ productController.updateProduct = async (req, res, next) => {
 
 productController.deleteProduct = async (req, res, next) => {
   const { productId } = req.params;
-
-  console.log("----", req.params);
 
   try {
     await prisma.product.delete({

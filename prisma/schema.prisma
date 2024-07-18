@@ -68,10 +68,11 @@ enum OrderStatus {
 }
 
 model Order {
-  id      Int         @id @default(autoincrement())
-  orderId Int         @unique
-  userId  Int
-  status  OrderStatus @default(PENDING)
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  status      OrderStatus @default(PENDING)
+  createdDate DateTime    @default(now()) @db.Timestamp(0)
+  updatedDate DateTime    @updatedAt @db.Timestamp(0)
 
   users User @relation(fields: [userId], references: [id])
 

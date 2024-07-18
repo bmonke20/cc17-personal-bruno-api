@@ -12,9 +12,7 @@ const checkIsAdmin = (req, res, next) => {
 };
 
 // Routes สำหรับผู้ใช้ทั่วไป (user)
-cartRouter.get("/:userId", cartController.getCart);
-cartRouter.post("/add", cartController.addCart);
-cartRouter.patch("/:cartId", cartController.updateCart);
-cartRouter.delete("/:cartId", cartController.deleteCart);
+cartRouter.post("/", cartController.addToCart);
+cartRouter.patch("/:cartId", cartController.createOrder);
 
 module.exports = cartRouter;

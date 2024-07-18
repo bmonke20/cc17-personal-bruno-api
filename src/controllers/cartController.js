@@ -1,120 +1,83 @@
 const { PrismaClient } = require("@prisma/client");
-const createError = require("../utils/createError");
-
 const prisma = new PrismaClient();
 
 const cartController = {};
 
-cartController.getCart = async (req, res, next) => {
-  const { userId } = req.params;
+cartController.addToCart = async (req, res, next) => {
+  const { userId, productId, amount } = req.body;
 
-  try {
-    const cart = await prisma.cart.findMany({
-      where: { userId: parseInt(userId) },
-      include: { products: true },
-    });
-    res.status(200).json(cart);
-  } catch (err) {
-    next(err);
+  if (!userId || !productId || !amount) {
+    return res
+      .status(400)
+      .json({ error: "userId, productId, และ amount เป็นค่าที่จำเป็น" });
   }
-};
-
-cartController.addCart = async (req, res, next) => {
-  const { productId, amount, userId } = req.body;
-
-  console.log("req.body", req.body);
   try {
-    if (!productId || !amount || !userId) {
-      createError(400, "productId, amount, and userId are required");
-    }
-
-    const newItem = await prisma.cart.create({
+    // Add product to Cart
+    const cartItem = await prisma.cart.create({
       data: {
-        productId: +productId,
-        amount: +amount,
-        userId: +userId,
+        userId: userId,
+        productId: productId,
+        amount: amount,
       },
     });
-    res.status(201).json(newItem);
-  } catch (err) {
-    next(err);
+
+    res.status(201).json({ message: "Product added to cart", cartItem });
+  } catch (error) {
+    next(error);
   }
 };
 
-cartController.updateCart = async (req, res, next) => {
-  const { cartId } = req.params;
-  const { amount } = req.body;
+cartController.createOrder = async (req, res, next) => {
+  const { userId } = req.body;
 
-  try {
-    const updateItem = await prisma.cart.update({
-      where: { id: +cartId },
-      data: { amount: +amount },
-    });
-
-    if (!updateItem) {
-      createError(404, `Item ${cartId} not found`);
-    }
-
-    res.status(200).json(updateItem);
-  } catch (err) {
-    next(err);
+  if (!userId) {
+    return res.status(400).json({ error: "userId เป็นค่าที่จำเป็น" });
   }
-};
-
-cartController.deleteCart = async (req, res, next) => {
-  const { cartId } = req.params;
-
   try {
-    const deleteItem = await prisma.cart.delete({
-      where: { id: +cartId },
+    // Create a new order with items from cart
+    const userCartItems = await prisma.cart.findMany({
+      where: {
+        userId: parseInt(userId),
+      },
+      include: {
+        products: true,
+      },
     });
 
-    if (!deleteItem) {
-      createError(404, `Item ${cartId} not found`);
-    }
-
-    res.status(200).json(deleteItem);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Controller สำหรับ admin
-cartController.updateCartByAdmin = async (req, res, next) => {
-  const { cartId } = req.params;
-  const { amount } = req.body;
-
-  try {
-    const updateItem = await prisma.cart.update({
-      where: { id: +cartId },
-      data: { amount: +amount },
+    const orderItems = userCartItems.map((item) => {
+      return {
+        productId: item.productId,
+        itemAmount: item.amount,
+        totalPrice: item.products.price * item.amount,
+      };
     });
 
-    if (!updateItem) {
-      createError(404, `Item ${cartId} not found`);
-    }
-
-    res.status(200).json(updateItem);
-  } catch (err) {
-    next(err);
-  }
-};
-
-cartController.deleteCartByAdmin = async (req, res, next) => {
-  const { cartId } = req.params;
-
-  try {
-    const deleteItem = await prisma.cart.delete({
-      where: { id: +cartId },
+    // Create Order
+    const newOrder = await prisma.order.create({
+      data: {
+        userId: parseInt(userId),
+        status: "PENDING",
+        OrderItem: {
+          createMany: {
+            data: orderItems,
+          },
+        },
+      },
+      include: {
+        OrderItem: true,
+      },
     });
 
-    if (!deleteItem) {
-      createError(404, `Item ${cartId} not found`);
-    }
+    // Clear user's cart after creating order
+    await prisma.cart.deleteMany({
+      where: {
+        userId: parseInt(userId),
+      },
+    });
 
-    res.status(200).json(deleteItem);
-  } catch (err) {
-    next(err);
+    res.status(201).json({ message: "Order created successfully", newOrder });
+  } catch (error) {
+    next(error);
   }
 };
 

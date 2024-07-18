@@ -14,10 +14,7 @@ userController.register = async (req, res, next) => {
 
     const userExist = await prisma.user.findFirst({
       where: {
-        OR: [
-          { username: username, NOT: { username: { contains: "admin" } } },
-          { email: email, NOT: { email: { contains: "admin" } } },
-        ],
+        OR: [{ username: username }, { email: email }],
       },
     });
 
@@ -32,6 +29,7 @@ userController.register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+    console.log("Hashed password:", hashedPassword);
 
     const data = {
       firstName,
@@ -56,8 +54,6 @@ userController.login = async (req, res, next) => {
   try {
     const { identify, password } = req.body;
 
-    console.log("----", identify);
-
     if (!identify || !password) {
       throw createError({
         message: "insert email or username",
@@ -71,14 +67,15 @@ userController.login = async (req, res, next) => {
       },
     });
 
-    console.log("+++", user);
-
     if (!user) {
       throw createError({
         message: "Invalid credentials 1",
         statusCode: 401,
       });
     }
+
+    console.log("User password from DB:", user.password);
+    console.log("Provided password:", password);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
@@ -96,7 +93,7 @@ userController.login = async (req, res, next) => {
       .status(201)
       .json({ message: "Login success", accessToken, redirectUrl });
   } catch (err) {
-    console.log(err);
+    console.error(err);
     next(err);
   }
 };
