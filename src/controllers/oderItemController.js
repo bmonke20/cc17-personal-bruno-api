@@ -79,39 +79,183 @@
 
 // module.exports = orderItemController;
 
-const { PrismaClient } = require("@prisma/client");
+// const { PrismaClient } = require("@prisma/client");
+// const createError = require("../utils/createError");
 
+// const prisma = new PrismaClient();
+
+// const orderItemController = {};
+
+// orderItemController.createOrderItem = async (req, res, next) => {
+//   const { productId, itemAmount } = req.body;
+
+//   const { user } = req;
+
+//   if (!productId || !itemAmount) {
+//     return res.status(400).json({
+//       error: "Missing required fields: userId, productId, itemAmount",
+//     });
+//   }
+
+//   try {
+//     // หา product
+//     const product = await prisma.product.findUnique({
+//       where: { id: productId },
+//     });
+
+//     if (!product) {
+//       return res.status(404).json({ error: "Product not found" });
+//     }
+
+//     // ตรวจสอบว่ามี Order ที่เป็น PENDING สำหรับ userId หรือไม่
+//     let order = await prisma.order.findFirst({
+//       where: { userId: user.id, status: "PENDING" },
+//     });
+
+//     // ถ้าไม่มี ให้สร้าง Order ใหม่
+//     if (!order) {
+//       order = await prisma.order.create({
+//         data: {
+//           userId: user.id,
+//           status: "PENDING",
+//         },
+//       });
+//     }
+
+//     // สร้าง OrderItem
+//     const orderItem = await prisma.orderItem.create({
+//       data: {
+//         orderId: order.id,
+//         productId,
+//         itemAmount,
+//         totalPrice: +product.price * +itemAmount,
+//       },
+//     });
+
+//     // ตรวจสอบว่ามี product ใน Cart แล้วหรือยัง
+//     const existingCartItem = await prisma.cart.findFirst({
+//       where: {
+//         userId: user.id,
+//         productId,
+//       },
+//     });
+
+//     if (existingCartItem) {
+//       // ถ้ามีอยู่แล้วให้เพิ่มจำนวน
+//       await prisma.cart.update({
+//         where: { id: existingCartItem.id },
+//         data: { amount: existingCartItem.amount + itemAmount },
+//       });
+//     } else {
+//       // ถ้าไม่มีให้สร้างใหม่
+//       await prisma.cart.create({
+//         data: {
+//           userId: user.id,
+//           productId,
+//           amount: itemAmount,
+//         },
+//       });
+//     }
+
+//     res.status(201).json(orderItem);
+//   } catch (err) {
+//     console.log("err----", err);
+//     next(err);
+//   }
+// };
+
+// // Read all OrderItems
+// orderItemController.getAllOrderItems = async (req, res, next) => {
+//   try {
+//     const orderItems = await prisma.orderItem.findMany();
+//     res.status(200).json(orderItems);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+// // Read a single OrderItem
+// orderItemController.getOrderItemById = async (req, res, next) => {
+//   const { id } = req.params;
+//   try {
+//     const orderItem = await prisma.orderItem.findUnique({
+//       where: { id: parseInt(id, 10) },
+//     });
+//     res.status(200).json(orderItem);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+// // Update an OrderItem
+// orderItemController.updateOrderItem = async (req, res, next) => {
+//   const { id } = req.params;
+//   const { orderId, productId, quantity, price } = req.body;
+//   let totalPrice = price * quantity;
+//   console.log("reqBody6666666666", req.body);
+//   console.log("totalprice", totalPrice);
+
+//   try {
+//     const existOrder = await prisma.order.findFirst({
+//       where: { userId: +req.user.id, status: "PENDING" },
+//     });
+//     // if (!existOrder) {
+//     //   createError({ statusCode: 400, field: "order not foune" });
+//     // }
+
+//     const orderItem = await prisma.orderItem.update({
+//       where: { productId: +productId, orderId: existOrder.id },
+//       data: {
+//         itemAmount: quantity,
+//         totalPrice,
+//       },
+//       include: { orders: true, products: true },
+//     });
+//     res.status(200).json(orderItem);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+// // Delete an OrderItem
+// orderItemController.deleteOrderItem = async (req, res, next) => {
+//   const { id } = req.params;
+
+//   try {
+//     const orderItem = await prisma.orderItem.delete({
+//       where: { id: +id },
+//     });
+//     res.status(200).json(orderItem);
+//   } catch (err) {
+//     next(err);
+//   }
+// };
+
+// module.exports = orderItemController;
+
+const { PrismaClient } = require("@prisma/client");
 const prisma = new PrismaClient();
 
 const orderItemController = {};
 
 orderItemController.createOrderItem = async (req, res, next) => {
   const { productId, itemAmount } = req.body;
-
   const { user } = req;
 
   if (!productId || !itemAmount) {
-    return res.status(400).json({
-      error: "Missing required fields: userId, productId, itemAmount",
-    });
+    return res
+      .status(400)
+      .json({ error: "Missing required fields: productId, itemAmount" });
   }
 
   try {
-    // หา product
-    const product = await prisma.product.findUnique({
-      where: { id: productId },
-    });
-
-    if (!product) {
-      return res.status(404).json({ error: "Product not found" });
-    }
-
-    // ตรวจสอบว่ามี Order ที่เป็น PENDING สำหรับ userId หรือไม่
     let order = await prisma.order.findFirst({
-      where: { userId: user.id, status: "PENDING" },
+      where: {
+        userId: user.id,
+        status: "PENDING",
+      },
     });
 
-    // ถ้าไม่มี ให้สร้าง Order ใหม่
     if (!order) {
       order = await prisma.order.create({
         data: {
@@ -121,7 +265,14 @@ orderItemController.createOrderItem = async (req, res, next) => {
       });
     }
 
-    // สร้าง OrderItem
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
     const orderItem = await prisma.orderItem.create({
       data: {
         orderId: order.id,
@@ -131,89 +282,64 @@ orderItemController.createOrderItem = async (req, res, next) => {
       },
     });
 
-    // ตรวจสอบว่ามี product ใน Cart แล้วหรือยัง
-    const existingCartItem = await prisma.cart.findFirst({
-      where: {
-        userId: user.id,
-        productId,
-      },
-    });
-
-    if (existingCartItem) {
-      // ถ้ามีอยู่แล้วให้เพิ่มจำนวน
-      await prisma.cart.update({
-        where: { id: existingCartItem.id },
-        data: { amount: existingCartItem.amount + itemAmount },
-      });
-    } else {
-      // ถ้าไม่มีให้สร้างใหม่
-      await prisma.cart.create({
-        data: {
-          userId: user.id,
-          productId,
-          amount: itemAmount,
-        },
-      });
-    }
-
     res.status(201).json(orderItem);
   } catch (err) {
-    console.log("err----", err);
     next(err);
   }
 };
 
-// Read all OrderItems
-orderItemController.getAllOrderItems = async (req, res, next) => {
-  try {
-    const orderItems = await prisma.orderItem.findMany();
-    res.status(200).json(orderItems);
-  } catch (err) {
-    next(err);
-  }
-};
+orderItemController.getOrderItem = async (req, res, next) => {
+  const { user } = req;
 
-// Read a single OrderItem
-orderItemController.getOrderItemById = async (req, res, next) => {
-  const { id } = req.params;
   try {
-    const orderItem = await prisma.orderItem.findUnique({
-      where: { id: parseInt(id, 10) },
-    });
-    res.status(200).json(orderItem);
-  } catch (err) {
-    next(err);
-  }
-};
-
-// Update an OrderItem
-orderItemController.updateOrderItem = async (req, res, next) => {
-  const { id } = req.params;
-  const { orderId, productId, itemAmount, totalPrice } = req.body;
-  try {
-    const orderItem = await prisma.orderItem.update({
-      where: { id: +id },
-      data: {
-        orderId,
-        productId,
-        itemAmount,
-        totalPrice,
+    const orderItem = await prisma.orderItem.findMany({
+      where: {
+        orderId: {
+          userId: user.id,
+        },
       },
     });
-    res.status(200).json(orderItem);
+
+    res.status(200).json({ orderItem });
   } catch (err) {
     next(err);
   }
 };
 
-// Delete an OrderItem
-orderItemController.deleteOrderItem = async (req, res, next) => {
-  const { id } = req.params;
+orderItemController.updateOrderItem = async (req, res, next) => {
+  const { user } = req;
+  const { productId, itemAmount } = req.body;
+
   try {
-    const orderItem = await prisma.orderItem.delete({
-      where: { id: parseInt(id, 10) },
+    const orderItem = await prisma.orderItem.update({
+      where: {
+        orderId: user.id,
+        productId: +productId,
+      },
+      data: {
+        itemAmount: itemAmount,
+      },
     });
-    res.status(200).json(orderItem);
+
+    res.status(200).json({ orderItem });
+  } catch (err) {
+    next(err);
+  }
+};
+
+orderItemController.deleteOrderItem = async (req, res, next) => {
+  const { user } = req;
+  const { productId } = req.body;
+
+  try {
+    await prisma.orderItem.deleteMany({
+      where: {
+        orderId: user.id,
+        productId: productId,
+      },
+    });
+
+    res.status(204).end();
   } catch (err) {
     next(err);
   }
