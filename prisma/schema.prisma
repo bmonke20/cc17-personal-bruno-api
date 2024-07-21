@@ -63,7 +63,7 @@ model OrderItem {
 
 enum OrderStatus {
   PENDING
-  APPROVE
+  SUCCESS
   DECLINE
 }
 
@@ -77,13 +77,8 @@ model Order {
   users User @relation(fields: [userId], references: [id])
 
   OrderItem OrderItem[]
-  Payment   Payment?
-}
 
-enum PaymentStatus {
-  PENDING
-  SUCCESS
-  DECLINE
+  Payment Payment?
 }
 
 model Payment {
@@ -94,5 +89,5 @@ model Payment {
   paymentDate DateTime @default(now()) @db.Timestamp(0)
   slipImage   String
 
-  orders Order @relation(fields: [orderId], references: [id])
+  order Order @relation(fields: [orderId], references: [id])
 }

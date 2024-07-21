@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const authenticate = async (req, res, next) => {
   try {
     const authorization = req.headers.authorization;
-    console.log(authorization, "token__________");
+    // console.log(authorization, "token__________");
     if (!authorization || !authorization.startsWith(`Bearer `)) {
       createError({
         message: "unauthen",

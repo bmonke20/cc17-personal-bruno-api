@@ -7,7 +7,7 @@ cartController.createCart = async (req, res, next) => {
   const { productId, amount } = req.body;
   const { user } = req;
 
-  console.log("----createCart", req.body);
+  // console.log("----createCart", req.body);
 
   try {
     const newCart = await prisma.cart.create({
@@ -38,7 +38,7 @@ cartController.updateCart = async (req, res, next) => {
   const { cartId } = req.params;
   const { amount } = req.body;
 
-  console.log("=====", req.params);
+  // console.log("=====", req.params);
 
   try {
     const updateCart = await prisma.cart.update({
@@ -46,7 +46,7 @@ cartController.updateCart = async (req, res, next) => {
       data: { amount },
       include: { products: true },
     });
-    console.log(updateCart);
+    // console.log(updateCart);
     res.status(200).json({ updateCart });
   } catch (err) {
     next(err);
@@ -56,7 +56,7 @@ cartController.updateCart = async (req, res, next) => {
 cartController.deleteCart = async (req, res, next) => {
   // const { id } = req.params;
 
-  console.log(req.params);
+  // console.log(req.params);
 
   try {
     const deleteCart = await prisma.cart.delete({

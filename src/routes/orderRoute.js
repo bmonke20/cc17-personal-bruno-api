@@ -33,6 +33,9 @@ const orderRouter = express.Router();
 
 orderRouter.post("/", authenticate, orderController.createOder);
 orderRouter.get("/:userId", authenticate, orderController.getOrder);
+
+orderRouter.get("/", orderController.getAllOrder);
+
 orderRouter.patch(
   "/:orderId/:userId",
   authenticate,

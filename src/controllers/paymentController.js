@@ -92,6 +92,7 @@
 // module.exports = paymentController;
 
 const { PrismaClient } = require("@prisma/client");
+const uploadService = require("../services/uploadService");
 
 const prisma = new PrismaClient();
 
@@ -99,80 +100,88 @@ const paymentController = {};
 
 paymentController.getAllPayment = async (req, res, next) => {
   try {
-    const payments = await prisma.payment.findMany();
-    res.json(payments);
-  } catch (error) {
-    res.status(500).json({ error: "Could not retrieve payments" });
+    const payments = await prisma.payment.findMany({
+      include: {
+        order: {
+          include: {
+            OrderItem: { include: { products: true } },
+          },
+        },
+      },
+    });
+    res.status(200).json(payments);
+  } catch (err) {
+    next(err);
   }
 };
 
 paymentController.createPayment = async (req, res, next) => {
   const { orderId, amountTotal, priceTotal, paymentDate, slipImage } = req.body;
 
+  const result = await uploadService.upload(req.file.path);
+
   try {
-    // ตรวจสอบว่า Order ที่ต้องการจะสร้าง Payment มีอยู่จริง
     const existingOrder = await prisma.order.findUnique({
-      where: { id: orderId },
+      where: {
+        id: +orderId,
+      },
     });
 
     if (!existingOrder) {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    // สร้าง Payment โดยใช้ orderId ที่เชื่อมโยงกับ Order นั้น
     const newPayment = await prisma.payment.create({
       data: {
-        orderId,
-        amountTotal,
-        priceTotal,
+        orderId: +orderId,
+        amountTotal: +amountTotal,
+        priceTotal: +priceTotal,
         paymentDate,
-        slipImage,
+        slipImage: result,
       },
     });
 
     res.json(newPayment);
   } catch (err) {
     next(err);
-    res.status(500).json({ error: "Could not create payment" });
   }
 };
 
 paymentController.getPaymentById = async (req, res, next) => {
-  const { id } = req.params;
+  const { orderId } = req.params;
 
   try {
     const payment = await prisma.payment.findUnique({
-      where: { id: parseInt(id) },
-      include: { orders: true },
+      where: {
+        orderId: +orderId,
+      },
     });
 
-    if (!payment) {
-      return res.status(404).json({ error: "Payment not found" });
-    }
-
-    res.json(payment);
+    res.status(200).json(payment);
   } catch (err) {
-    res.status(500).json({ error: "Could not retrieve payment" });
     next(err);
   }
 };
 
 paymentController.updatePayment = async (req, res, next) => {
-  const { id } = req.params;
-  const { amountTotal, priceTotal, paymentDate, slipImage } = req.body;
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  // ตรวจสอบค่า status
+  if (!["PENDING", "SUCCESS", "DECLINE"].includes(status)) {
+    return res.status(400).json({ error: "Invalid status value" });
+  }
 
   try {
-    const updatedPayment = await prisma.payment.update({
-      where: { id: parseInt(id) },
+    const updatedOrder = await prisma.order.update({
+      where: {
+        id: parseInt(orderId),
+      },
       data: {
-        amountTotal,
-        priceTotal,
-        paymentDate,
-        slipImage,
+        status: status, // ใช้ status ที่ถูกต้อง
       },
     });
-
-    res.json(updatedPayment);
+    res.status(200).json(updatedOrder);
   } catch (err) {
     next(err);
   }

@@ -103,7 +103,7 @@ productController.createProduct = async (req, res, next) => {
   try {
     const { productType, productName, productDetail, productPrice } = req.body;
 
-    const result = await uploadService.uploadProduct(req.file.path);
+    const result = await uploadService.upload(req.file.path);
 
     const newProduct = await prisma.product.create({
       data: {
@@ -118,7 +118,7 @@ productController.createProduct = async (req, res, next) => {
     res.status(200).json(newProduct);
   } catch (err) {
     next(err);
-    console.log(err.message);
+    // console.log(err.message);
   }
 };
 
@@ -127,8 +127,7 @@ productController.getAllProduct = async (req, res, next) => {
     const products = await prisma.product.findMany();
     res.json(products);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: err.message });
+    next(err);
   }
 };
 
@@ -146,8 +145,7 @@ productController.getProductById = async (req, res, next) => {
     }
     res.status(200).json(product);
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ message: "no fetch product" });
+    next(err);
   }
 };
 
@@ -157,12 +155,12 @@ productController.updateProduct = async (req, res, next) => {
   req.body.price = +req.body.productPrice;
   delete req.body.productPrice;
 
-  console.log("req body00000000000", req.body);
+  // console.log("req body00000000000", req.body);
 
-  console.log(req.file);
+  // console.log(req.file);
 
   if (req.file) {
-    const result = await uploadService.uploadProduct(req.file.path);
+    const result = await uploadService.upload(req.file.path);
     req.body.productImage = result;
   }
 

@@ -29,7 +29,7 @@ userController.register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log("Hashed password:", hashedPassword);
+    // console.log("Hashed password:", hashedPassword);
 
     const data = {
       firstName,
@@ -74,8 +74,8 @@ userController.login = async (req, res, next) => {
       });
     }
 
-    console.log("User password from DB:", user.password);
-    console.log("Provided password:", password);
+    // console.log("User password from DB:", user.password);
+    // console.log("Provided password:", password);
 
     const passwordMatch = await bcrypt.compare(password, user.password);
 
