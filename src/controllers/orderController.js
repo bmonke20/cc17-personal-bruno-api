@@ -117,9 +117,37 @@ orderController.updateOrder = async (req, res, next) => {
 orderController.deleteOrder = async (req, res, next) => {
   const { orderId } = req.params;
 
+  console.log("===========", req.params);
+
   try {
+    // ตรวจสอบว่ามีข้อมูล Payment หรือไม่
+    const payment = await prisma.payment.findUnique({
+      where: {
+        orderId: +orderId,
+      },
+    });
+
+    if (payment) {
+      // ลบข้อมูล Payment
+      await prisma.payment.delete({
+        where: {
+          orderId: +orderId,
+        },
+      });
+    }
+
+    // ลบข้อมูลที่เกี่ยวข้องก่อน
+    await prisma.orderItem.deleteMany({
+      where: {
+        orderId: +orderId,
+      },
+    });
+
+    // ลบข้อมูลในตารางหลัก
     await prisma.order.delete({
-      where: { id: +orderId },
+      where: {
+        id: +orderId,
+      },
     });
 
     res.status(200).json({ message: "Order deleted successfully" });
